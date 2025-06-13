@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jarvis Chat Interface</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="app-container">
+        <div class="chat-container">
+            <div class="chat-header">
+                <div class="header-left">
+                    <span class="avatar">🤖</span>
+                    <h1>Jarvis</h1>
+                </div>
+                <div class="header-right">
+                    <button class="settings-btn">⚙️</button>
+                </div>
+            </div>
+            <div class="chat-messages" id="messageContainer">
+                <!-- Messages will be inserted here -->
+            </div>
+            <div class="chat-input">
+                <input type="text" id="messageInput" placeholder="Type a message...">
+                <button id="sendButton">Send</button>
+            </div>
+        </div>
+        
+        <div class="center-animation">
+            <div class="globe"></div>
+        </div>
+        
+        <div class="info-panel">
+            <div class="time-section">
+                <div class="time">
+                    <span id="hours">7</span>:<span id="minutes">50</span>°
+                    <span class="period">Am</span>
+                </div>
+                <div class="weather">
+                    <span class="weather-icon">🌤️</span>
+                    <span class="weather-info">Partly Cloudy</span>
+                </div>
+            </div>
+            <div class="date-section">
+                <div class="date">
+                    <span class="date-label">Date</span>
+                    <span class="date-value" id="dateValue">6.00</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
