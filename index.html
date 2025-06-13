@@ -1,56 +1,1165 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jarvis Chat Interface</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+<title>Neon HUD-style Messaging Dashboard</title>
+<!-- Google Material Icons -->
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+<style>
+  /* CSS Variables for Themes */
+  :root {
+    --bg-dark: #0a0f19;
+    --bg-light: #ffffff;
+    --text-light: #e0e7ff;
+    --text-dark: #2e2e2e;
+    --neon-primary: #0ff;
+    --neon-secondary: #0f9;
+    --neon-pink: #ff00ff;
+    --neon-purple: #bb00ff;
+    --neon-orange: #ff6600;
+    --font-family: 'Poppins', Arial, sans-serif;
+  }
+
+  /* Dark mode default */
+  body {
+    margin: 0;
+    font-family: var(--font-family);
+    background-color: var(--bg-dark);
+    color: var(--text-light);
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* Light mode overrides */
+  body.light-mode {
+    background-color: var(--bg-light);
+    color: var(--text-dark);
+  }
+
+  /* Reset box sizing */
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  /* Utility spacing */
+  .container {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 0 16px;
+    width: 100%;
+  }
+  h1, h2, h3, h4 {
+    margin-top: 0;
+  }
+
+  /* Animated SVG Grid background container */
+  #animated-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    user-select: none;
+  }
+
+  /* Layout grid: Header + Main area */
+  header {
+    background: rgba(10,15,25,0.85);
+    backdrop-filter: blur(10px);
+    color: var(--neon-primary);
+    padding: 12px 24px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--neon-primary);
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  body.light-mode header {
+    background: rgba(255 255 255 / 0.85);
+    color: var(--neon-purple);
+    border-bottom-color: var(--neon-purple);
+  }
+
+  header h1 {
+    font-weight: 800;
+    font-size: 24px;
+    letter-spacing: 2px;
+    color: inherit;
+  }
+
+  /* Navigation & controls on header */
+  .header-controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  /* Neon button styles */
+  button.neon-btn {
+    background: transparent;
+    border: 2px solid var(--neon-primary);
+    color: var(--neon-primary);
+    padding: 8px 16px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow:
+      0 0 6px var(--neon-primary),
+      inset 0 0 8px var(--neon-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  button.neon-btn:hover,
+  button.neon-btn:focus {
+    color: var(--neon-secondary);
+    border-color: var(--neon-secondary);
+    box-shadow:
+      0 0 12px var(--neon-secondary),
+      inset 0 0 16px var(--neon-secondary);
+    outline: none;
+  }
+  body.light-mode button.neon-btn {
+    border-color: var(--neon-purple);
+    color: var(--neon-purple);
+    box-shadow:
+      0 0 6px var(--neon-purple),
+      inset 0 0 8px var(--neon-purple);
+  }
+  body.light-mode button.neon-btn:hover,
+  body.light-mode button.neon-btn:focus {
+    color: var(--neon-orange);
+    border-color: var(--neon-orange);
+    box-shadow:
+      0 0 12px var(--neon-orange),
+      inset 0 0 16px var(--neon-orange);
+  }
+
+  .material-icons.md-18 { font-size: 18px; }
+  .material-icons.md-24 { font-size: 24px; }
+  .material-icons.md-36 { font-size: 36px; }
+  .material-icons.md-48 { font-size: 48px; }
+
+  /* Main layout grid for app */
+  main.app-container {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 3fr 1.5fr;
+    grid-gap: 20px;
+    padding: 24px 24px 40px 24px;
+    max-width: 1440px;
+    margin: 0 auto;
+    z-index: 10;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  body.light-mode main.app-container {
+    background: #f7f7f7;
+    color: var(--text-dark);
+  }
+
+  /* Responsive grid layout */
+  @media (max-width:1023px) {
+    main.app-container {
+      grid-template-columns: 1fr 3fr;
+    }
+  }
+  @media (max-width:767px) {
+    main.app-container {
+      grid-template-columns: 1fr;
+      padding: 16px;
+    }
+  }
+
+  /* Sidebar: Conversation List */
+  aside.conversations {
+    background: rgba(10, 15, 25, 0.55);
+    border-radius: 16px;
+    box-shadow:
+      0 0 20px rgba(0, 255, 255, 0.15);
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 112px);
+    overflow-y: auto;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  body.light-mode aside.conversations {
+    background: #ffffff;
+    box-shadow:
+      0 0 20px rgba(187, 0, 255, 0.15);
+    color: var(--text-dark);
+  }
+
+  aside.conversations header {
+    padding: 20px;
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--neon-primary);
+    border-bottom: 1px solid var(--neon-primary);
+  }
+  body.light-mode aside.conversations header {
+    color: var(--neon-purple);
+    border-bottom-color: var(--neon-purple);
+  }
+
+  /* Conversation items */
+  .conversation-item {
+    display: flex;
+    align-items: center;
+    padding: 14px 20px;
+    cursor: pointer;
+    gap: 12px;
+    transition: background 0.3s ease, color 0.3s ease;
+    border-radius: 12px;
+  }
+  .conversation-item:hover,
+  .conversation-item.active {
+    background: var(--neon-primary);
+    color: #000;
+    box-shadow:
+      0 0 12px var(--neon-primary);
+  }
+  body.light-mode .conversation-item:hover,
+  body.light-mode .conversation-item.active {
+    background: var(--neon-purple);
+    color: #fff;
+    box-shadow:
+      0 0 12px var(--neon-purple);
+  }
+
+  .conversation-item img.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid transparent;
+    transition: border-color 0.3s ease;
+  }
+  .conversation-item.active img.avatar {
+    border-color: var(--neon-secondary);
+  }
+  body.light-mode .conversation-item.active img.avatar {
+    border-color: var(--neon-orange);
+  }
+
+  .conversation-info {
+    flex: 1;
+    overflow: hidden;
+  }
+
+  .conversation-info .name {
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .conversation-info .last-message {
+    font-size: 13px;
+    opacity: 0.7;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Chat area */
+  section.chat {
+    background: rgba(10, 15, 25, 0.85);
+    border-radius: 16px;
+    box-shadow:
+      0 0 20px rgba(0, 255, 255, 0.30);
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 112px);
+    overflow: hidden;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  body.light-mode section.chat {
+    background: #ede7f6;
+    color: var(--text-dark);
+    box-shadow:
+      0 0 20px rgba(187, 0, 255, 0.30);
+  }
+  .chat header {
+    padding: 20px;
+    border-bottom: 1px solid var(--neon-primary);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: border-color 0.3s ease;
+  }
+  body.light-mode .chat header {
+    border-bottom-color: var(--neon-purple);
+  }
+  .chat header img.avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--neon-primary);
+    transition: border-color 0.3s ease;
+  }
+  body.light-mode .chat header img.avatar {
+    border-color: var(--neon-purple);
+  }
+  .chat header .chat-title {
+    font-weight: 700;
+    font-size: 20px;
+    color: var(--neon-primary);
+    transition: color 0.3s ease;
+  }
+  body.light-mode .chat header .chat-title {
+    color: var(--neon-purple);
+  }
+
+  .chat-messages {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    scroll-behavior: smooth;
+    background: radial-gradient(circle at center, rgba(0,255,255,0.04) 2%, transparent 55%);
+    transition: background-color 0.3s ease;
+  }
+  body.light-mode .chat-messages {
+    background: radial-gradient(circle at center, rgba(187,0,255,0.04) 2%, transparent 55%);
+  }
+
+  /* Chat bubbles */
+  .message {
+    max-width: 70%;
+    padding: 14px 18px;
+    border-radius: 18px;
+    font-size: 14px;
+    line-height: 1.3;
+    position: relative;
+    word-wrap: break-word;
+    box-shadow:
+      0 0 8px rgba(0, 255, 255, 0.4);
+    transition: background 0.3s ease, color 0.3s ease;
+  }
+  .message.sent {
+    align-self: flex-end;
+    background: linear-gradient(135deg, #00fff7, #00d4d4);
+    color: #000;
+    border-bottom-right-radius: 4px;
+  }
+  body.light-mode .message.sent {
+    background: linear-gradient(135deg, #a0ceff, #6699ff);
+    color: #000;
+  }
+  .message.received {
+    align-self: flex-start;
+    background: linear-gradient(135deg, #002f4b, #006e91);
+    color: #e0e7ff;
+    border-bottom-left-radius: 4px;
+  }
+  body.light-mode .message.received {
+    background: linear-gradient(135deg, #bb99ff, #9966cc);
+    color: #222;
+  }
+
+  .message .time {
+    font-size: 10px;
+    opacity: 0.5;
+    margin-top: 6px;
+    text-align: right;
+  }
+
+  /* Chat input area */
+  .chat-input-area {
+    border-top: 1px solid var(--neon-primary);
+    padding: 16px 20px;
+    display: flex;
+    gap: 12px;
+    background: rgba(10, 15, 25, 0.9);
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+  }
+  body.light-mode .chat-input-area {
+    background: #f3f0ff;
+    border-top-color: var(--neon-purple);
+  }
+  .chat-input-area input[type="text"] {
+    flex: 1;
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: none;
+    background: #011627;
+    color: var(--neon-primary);
+    font-size: 14px;
+    outline-offset: 2px;
+    outline-color: var(--neon-primary);
+    transition: outline-color 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+  }
+  .chat-input-area input[type="text"]:focus {
+    outline-color: var(--neon-secondary);
+  }
+  body.light-mode .chat-input-area input[type="text"] {
+    background: #ffffff;
+    color: var(--text-dark);
+    outline-color: var(--neon-purple);
+  }
+  body.light-mode .chat-input-area input[type="text"]:focus {
+    outline-color: var(--neon-orange);
+  }
+  .chat-input-area button.send-btn {
+    background: var(--neon-secondary);
+    border: none;
+    border-radius: 12px;
+    padding: 10px 20px;
+    font-weight: 700;
+    color: #000;
+    cursor: pointer;
+    box-shadow:
+      0 0 10px var(--neon-secondary);
+    transition: background 0.3s ease;
+  }
+  .chat-input-area button.send-btn:hover,
+  .chat-input-area button.send-btn:focus {
+    background: #00aa77;
+    box-shadow:
+      0 0 20px #00aa77;
+    outline: none;
+  }
+
+  /* File upload preview container */
+  #file-preview-container {
+    display: flex;
+    gap: 12px;
+    padding-top: 8px;
+    overflow-x: auto;
+  }
+  .file-preview {
+    background: rgba(255 255 255 / 0.05);
+    border: 1px solid var(--neon-primary);
+    border-radius: 8px;
+    padding: 6px;
+    text-align: center;
+    width: 70px;
+    cursor: default;
+    flex-shrink: 0;
+    position: relative;
+  }
+  body.light-mode .file-preview {
+    background: rgba(0, 0, 0, 0.06);
+    border-color: var(--neon-purple);
+  }
+  .file-preview img {
+    width: 100%;
+    height: 50px;
+    object-fit: cover;
+    border-radius: 6px;
+  }
+  .file-preview span.filename {
+    font-size: 10px;
+    color: var(--neon-primary);
+    display: block;
+    margin-top: 4px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  body.light-mode .file-preview span.filename {
+    color: var(--neon-purple);
+  }
+  .file-preview button.remove-file {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    background: var(--neon-pink);
+    border: none;
+    color: #000;
+    font-weight: 700;
+    border-radius: 12px;
+    width: 18px;
+    height: 18px;
+    line-height: 14px;
+    cursor: pointer;
+    padding: 0;
+    font-size: 13px;
+  }
+  /* Voice command button */
+  button.voice-btn {
+    border: 2px solid var(--neon-pink);
+    color: var(--neon-pink);
+    padding: 10px 14px;
+    border-radius: 50%;
+    font-size: 24px;
+    width: 48px;
+    height: 48px;
+    background: transparent;
+    box-shadow:
+      0 0 12px var(--neon-pink);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  button.voice-btn.listening {
+    background: var(--neon-pink);
+    color: #000;
+    box-shadow:
+      0 0 24px var(--neon-pink);
+    animation: pulse 1.5s infinite;
+  }
+  body.light-mode button.voice-btn {
+    border-color: var(--neon-purple);
+    color: var(--neon-purple);
+    box-shadow:
+      0 0 12px var(--neon-purple);
+  }
+  body.light-mode button.voice-btn.listening {
+    background: var(--neon-purple);
+    color: #fff;
+    box-shadow:
+      0 0 24px var(--neon-purple);
+  }
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 24px var(--neon-pink);
+    }
+    50% {
+      box-shadow: 0 0 40px var(--neon-pink);
+    }
+    100% {
+      box-shadow: 0 0 24px var(--neon-pink);
+    }
+  }
+
+  /* Right sidebar: Utilities - clock, weather, timezone */
+  aside.utilities {
+    background: rgba(10, 15, 25, 0.55);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    box-shadow:
+      0 0 20px rgba(255, 0, 255, 0.15);
+    padding: 24px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+    height: calc(100vh - 112px);
+    overflow-y: auto;
+    color: var(--neon-pink);
+    font-weight: 600;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  body.light-mode aside.utilities {
+    background: #ffffff;
+    box-shadow:
+      0 0 20px rgba(187, 0, 255, 0.15);
+    color: var(--neon-purple);
+  }
+  aside.utilities h2 {
+    font-size: 18px;
+    margin-bottom: 8px;
+    color: var(--neon-pink);
+  }
+  body.light-mode aside.utilities h2 {
+    color: var(--neon-purple);
+  }
+
+  /* Clock */
+  .clock {
+    font-size: 36px;
+    font-weight: 800;
+    letter-spacing: 3px;
+    line-height: 1;
+  }
+  .clock-date {
+    font-weight: 400;
+    font-size: 14px;
+    opacity: 0.7;
+  }
+
+  /* Weather widget (mock) */
+  .weather {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .weather-icon {
+    font-size: 48px;
+    color: var(--neon-purple);
+  }
+  body.light-mode .weather-icon {
+    color: var(--neon-orange);
+  }
+  .weather-info {
+    display: flex;
+    flex-direction: column;
+  }
+  .weather-temp {
+    font-size: 28px;
+    font-weight: 700;
+  }
+  .weather-desc {
+    font-size: 14px;
+    font-weight: 400;
+    opacity: 0.8;
+  }
+
+  /* Timezone selector */
+  select#timezone-select {
+    background: transparent;
+    border: 2px solid var(--neon-pink);
+    border-radius: 12px;
+    padding: 10px;
+    color: var(--neon-pink);
+    font-weight: 600;
+    font-size: 14px;
+    width: 100%;
+    appearance: none;
+    cursor: pointer;
+    box-shadow:
+      0 0 8px var(--neon-pink);
+    outline-offset: 2px;
+    outline-color: transparent;
+    transition: outline-color 0.3s ease;
+  }
+  body.light-mode select#timezone-select {
+    color: var(--neon-purple);
+    border-color: var(--neon-purple);
+    box-shadow:
+      0 0 8px var(--neon-purple);
+  }
+  select#timezone-select:focus {
+    outline-color: var(--neon-purple);
+  }
+  body.light-mode select#timezone-select:focus {
+    outline-color: var(--neon-orange);
+  }
+
+  /* Floating labels for forms */
+  .form-group {
+    position: relative;
+    margin-bottom: 20px;
+  }
+  .form-group input {
+    width: 100%;
+    background: #011627;
+    border: none;
+    border-radius: 12px;
+    padding: 18px 16px 6px 16px;
+    color: var(--neon-primary);
+    font-size: 14px;
+    outline-offset: 2px;
+    outline-color: var(--neon-primary);
+    transition: background-color 0.3s ease, color 0.3s ease, outline-color 0.3s ease;
+  }
+  body.light-mode .form-group input {
+    background: #ffffff;
+    color: var(--text-dark);
+    outline-color: var(--neon-purple);
+  }
+  .form-group input:focus {
+    outline-color: var(--neon-secondary);
+  }
+  body.light-mode .form-group input:focus {
+    outline-color: var(--neon-orange);
+  }
+  .form-group label {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    color: var(--neon-primary);
+    font-size: 14px;
+    pointer-events: none;
+    transition: all 0.3s ease;
+  }
+  body.light-mode .form-group label {
+    color: var(--neon-purple);
+  }
+  .form-group input:focus + label,
+  .form-group input:not(:placeholder-shown) + label {
+    top: 6px;
+    font-size: 10px;
+    color: var(--neon-secondary);
+  }
+  body.light-mode .form-group input:focus + label,
+  body.light-mode .form-group input:not(:placeholder-shown) + label {
+    color: var(--neon-orange);
+  }
+
+  /* Validation error text */
+  .error-text {
+    font-size: 12px;
+    color: var(--neon-pink);
+    margin-top: 4px;
+  }
+
+  /* Form container */
+  .form-container {
+    max-width: 400px;
+    background: rgba(10, 15, 25, 0.85);
+    padding: 32px 24px;
+    border-radius: 16px;
+    box-shadow:
+      0 0 20px rgba(255, 0, 255, 0.15);
+    margin: 24px auto;
+    color: var(--neon-primary);
+  }
+  body.light-mode .form-container {
+    background: #fff;
+    color: var(--text-dark);
+    box-shadow:
+      0 0 20px rgba(187, 0, 255, 0.15);
+  }
+
+  .form-title {
+    font-weight: 800;
+    font-size: 28px;
+    margin-bottom: 24px;
+    text-align: center;
+  }
+
+  .form-toggle {
+    font-size: 14px;
+    text-align: center;
+    margin-top: 16px;
+    color: var(--neon-purple);
+    cursor: pointer;
+    user-select: none;
+  }
+  .form-toggle:hover {
+    text-decoration: underline;
+  }
+
+  /* Responsive for form on mobile */
+  @media (max-width: 767px) {
+    main.app-container {
+      padding: 16px 12px 32px 12px;
+      grid-gap: 12px;
+    }
+    aside.conversations {
+      height: auto;
+      max-height: 280px;
+    }
+    aside.utilities {
+      height: auto;
+      max-height: 280px;
+      padding: 16px 16px;
+    }
+    section.chat {
+      height: auto;
+    }
+    .form-container {
+      margin: 16px 10px;
+    }
+  }
+</style>
 </head>
 <body>
-    <div class="app-container">
-        <div class="chat-container">
-            <div class="chat-header">
-                <div class="header-left">
-                    <span class="avatar">🤖</span>
-                    <h1>Jarvis</h1>
-                </div>
-                <div class="header-right">
-                    <button class="settings-btn">⚙️</button>
-                </div>
-            </div>
-            <div class="chat-messages" id="messageContainer">
-                <!-- Messages will be inserted here -->
-            </div>
-            <div class="chat-input">
-                <input type="text" id="messageInput" placeholder="Type a message...">
-                <button id="sendButton">Send</button>
-            </div>
-        </div>
-        
-        <div class="center-animation">
-            <div class="globe"></div>
-        </div>
-        
-        <div class="info-panel">
-            <div class="time-section">
-                <div class="time">
-                    <span id="hours">7</span>:<span id="minutes">50</span>°
-                    <span class="period">Am</span>
-                </div>
-                <div class="weather">
-                    <span class="weather-icon">🌤️</span>
-                    <span class="weather-info">Partly Cloudy</span>
-                </div>
-            </div>
-            <div class="date-section">
-                <div class="date">
-                    <span class="date-label">Date</span>
-                    <span class="date-value" id="dateValue">6.00</span>
-                </div>
-            </div>
-        </div>
+  <!-- Animated SVG Grid Background -->
+  <svg id="animated-bg" width="100%" height="100%" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+        <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#00fff7" stroke-width="0.5" stroke-opacity="0.15" />
+      </pattern>
+      <filter id="glow" x="-50%" y="-50%" width="200%" height="200%" color-interpolation-filters="sRGB">
+        <feDropShadow dx="0" dy="0" stdDeviation="2" flood-color="#00fff7" flood-opacity="0.7"/>
+        <feDropShadow dx="0" dy="0" stdDeviation="4" flood-color="#00fff7" flood-opacity="0.4"/>
+      </filter>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#grid)" filter="url(#glow)" />
+  </svg>
+
+  <!-- HEADER -->
+  <header>
+    <h1>Site Title</h1>
+    <div class="header-controls">
+      <button id="darkModeToggle" class="neon-btn" aria-label="Toggle dark and light mode" title="Toggle dark / light mode">
+        <span class="material-icons md-18" aria-hidden="true">dark_mode</span>
+      </button>
+      <button id="voiceBtn" class="voice-btn" aria-label="Start voice command" title="Voice command" type="button">
+        <span class="material-icons md-24" aria-hidden="true">mic</span>
+      </button>
     </div>
-    <script src="script.js"></script>
+  </header>
+
+  <!-- MAIN APP LAYOUT -->
+  <main class="app-container">
+    <!-- LEFT SIDEBAR: Conversation List -->
+    <aside class="conversations" aria-label="Conversation list">
+      <header>
+        Conversations 
+      </header>
+      <div id="convoList">
+        <!-- Sample conversations dynamically inserted -->
+      </div>
+    </aside>
+
+    <!-- CENTER: Chat window -->
+    <section class="chat" aria-label="Chat conversation">
+      <header id="chatHeader" tabindex="0" aria-live="polite" aria-atomic="true" aria-relevant="additions">
+        <!-- Chat header with user info -->
+      </header>
+      <div id="chatMessages" class="chat-messages" tabindex="0" aria-live="polite" aria-atomic="false" aria-relevant="additions">
+        <!-- Chat messages here -->
+      </div>
+      <form id="chatForm" class="chat-input-area" aria-label="Send a message">
+        <input type="text" id="chatInput" autocomplete="off" placeholder="Type a message..." aria-required="true" aria-describedby="input-error" />
+        <input type="file" id="fileInput" multiple aria-label="Upload files" style="display:none" />
+        <button type="button" id="uploadBtn" class="neon-btn" aria-label="Upload files" title="Attach files">
+          <span class="material-icons md-18" aria-hidden="true">attach_file</span>
+        </button>
+        <button type="submit" class="send-btn" aria-label="Send message">Send</button>
+      </form>
+      <div id="file-preview-container" aria-live="polite" aria-atomic="true">
+        <!-- File previews shown here -->
+      </div>
+    </section>
+
+    <!-- RIGHT SIDEBAR: Utilities -->
+    <aside class="utilities" aria-label="Utilities panel">
+      <div class="clock-container" aria-live="polite" aria-atomic="true">
+        <h2>Local Time</h2>
+        <div id="clock" class="clock" aria-label="Current time">--:--:--</div>
+        <div id="clockDate" class="clock-date" aria-label="Current date">-- --- ----</div>
+      </div>
+
+      <div class="weather-container">
+        <h2>Weather (Mock)</h2>
+        <div class="weather" aria-label="Current weather conditions">
+          <span class="material-icons weather-icon" aria-hidden="true">wb_sunny</span>
+          <div class="weather-info">
+            <div id="weatherTemp" class="weather-temp">25°C</div>
+            <div id="weatherDesc" class="weather-desc">Sunny</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="timezone-container">
+        <h2>Timezone</h2>
+        <select id="timezone-select" aria-label="Select timezone">
+          <!-- Timezones inserted dynamically -->
+        </select>
+      </div>
+    </aside>
+  </main>
+
+<script>
+  // DEMO DATA: sample users and conversations
+  const users = [
+    {
+      id: 1,
+      name: "Alice Johnson",
+      avatar: "https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/306c057e-e6e6-407e-8529-632fdeb84a62.png",
+      timezone: "America/New_York"
+    },
+    {
+      id: 2,
+      name: "Bob Smith",
+      avatar: "https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/073ea6c1-2201-4f1e-8b41-ac2155c16b56.png",
+      timezone: "Europe/London"
+    },
+    {
+      id: 3,
+      name: "Charlie Davis",
+      avatar: "https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/4ca78cc4-3cbe-4245-896e-7849620d4358.png",
+      timezone: "Asia/Tokyo"
+    }
+  ];
+  const currentUser = {
+    id: 99,
+    name: "You",
+    avatar: "https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/c7e12c93-e471-4809-9ecc-1a7d1ff26ee4.png",
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"
+  };
+  let conversations = [
+    {
+      id: 1,
+      participants: [currentUser.id, 1],
+      messages: [
+        {senderId: 1, timestamp: Date.now() - 3600000, text: "Hey! How's everything?", type: "text"},
+        {senderId: 99, timestamp: Date.now() - 3500000, text: "Good! Working on the neon dashboard.", type: "text"},
+        {senderId: 1, timestamp: Date.now() - 3400000, text: "Nice! Can't wait to see it.", type: "text"}
+      ]
+    },
+    {
+      id: 2,
+      participants: [currentUser.id, 2],
+      messages: [
+        {senderId: 2, timestamp: Date.now() - 7200000, text: "Meeting at 3PM?", type: "text"},
+        {senderId: 99, timestamp: Date.now() - 7100000, text: "Yes, I'll be there.", type: "text"},
+        {senderId: 2, timestamp: Date.now() - 7000000, text: "Great!", type: "text"}
+      ]
+    },
+    {
+      id: 3,
+      participants: [currentUser.id, 3],
+      messages: [
+        {senderId: 3, timestamp: Date.now() - 10800000, text: "Check out this file I made.", type: "text"},
+        {senderId: 99, timestamp: Date.now() - 10700000, text: "Looking good!", type: "text"}
+      ]
+    }
+  ];
+
+  // Active conversation id
+  let activeConvoId = conversations[0].id;
+
+  // Utility: Format time and date strings
+  function formatTime(date) {
+    return date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+  }
+  function formatDate(date) {
+    return date.toLocaleDateString([], {year: 'numeric', month: 'short', day: 'numeric'});
+  }
+
+  // Render conversations list
+  function renderConversationList() {
+    const convoList = document.getElementById('convoList');
+    convoList.innerHTML = '';
+    conversations.forEach(conv => {
+      const otherId = conv.participants.find(id => id !== currentUser.id);
+      const user = users.find(u => u.id === otherId);
+      if (!user) return;
+      const lastMsg = conv.messages[conv.messages.length - 1];
+      const preview = lastMsg.type === "file" ? "[File]" : lastMsg.text;
+      const convoItem = document.createElement('div');
+      convoItem.className = 'conversation-item' + (conv.id === activeConvoId ? ' active' : '');
+      convoItem.tabIndex = 0;
+      convoItem.setAttribute('role','button');
+      convoItem.setAttribute('aria-label', `Conversation with ${user.name}, last message: ${preview}`);
+      convoItem.addEventListener('click', () => {
+        activeConvoId = conv.id;
+        renderConversationList();
+        renderChatWindow();
+      });
+      convoItem.addEventListener('keydown', e => {
+        if(e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          activeConvoId = conv.id;
+          renderConversationList();
+          renderChatWindow();
+        }
+      });
+
+      convoItem.innerHTML = `
+        <img class="avatar" src="${user.avatar}" alt="Avatar of ${user.name}" loading="lazy" />
+        <div class="conversation-info">
+          <div class="name">${user.name}</div>
+          <div class="last-message">${preview}</div>
+        </div>
+      `;
+      convoList.appendChild(convoItem);
+    });
+  }
+
+  // Render chat messages for active conversation
+  function renderChatWindow() {
+    const chatHeader = document.getElementById('chatHeader');
+    const chatMessages = document.getElementById('chatMessages');
+
+    const convo = conversations.find(c => c.id === activeConvoId);
+    if (!convo) return;
+
+    // Get chat partner
+    const otherId = convo.participants.find(id => id !== currentUser.id);
+    const user = users.find(u => u.id === otherId);
+
+    chatHeader.innerHTML = `
+      <img class="avatar" src="${user.avatar}" alt="Avatar of ${user.name}" />
+      <div class="chat-title">${user.name}</div>
+    `;
+
+    chatMessages.innerHTML = '';
+    convo.messages.forEach(message => {
+      const isSentByUser = message.senderId === currentUser.id;
+      const msgDiv = document.createElement('div');
+      msgDiv.className = 'message ' + (isSentByUser ? 'sent' : 'received');
+      let contentHtml = '';
+      if (message.type === 'text') {
+        contentHtml = `<div class="text-content">${escapeHtml(message.text)}</div>`;
+      } else if (message.type === 'file') {
+        if (message.fileType && message.fileType.startsWith('image/')) {
+          contentHtml = `<img src="${message.fileUrl}" alt="Shared image from chat" style="max-width:200px; border-radius: 12px;" />`;
+        } else {
+          contentHtml = `<a href="${message.fileUrl}" download="${message.fileName}" style="color:${ isSentByUser ? '#000' : '#e0e7ff'}; text-decoration: underline;">${escapeHtml(message.fileName)}</a>`;
+        }
+      }
+      msgDiv.innerHTML = contentHtml + `<div class="time" aria-label="Sent at ${new Date(message.timestamp).toLocaleTimeString()}">${formatTime(new Date(message.timestamp))}</div>`;
+      chatMessages.appendChild(msgDiv);
+    });
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
+
+  // Simple escape HTML to avoid injection
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.innerText = text;
+    return div.innerHTML;
+  }
+
+  // Dark/Light mode toggle
+  const darkModeToggle = document.getElementById('darkModeToggle');
+  const darkModeIcon = darkModeToggle.querySelector('span.material-icons');
+  darkModeToggle.addEventListener('click', () => {
+    const body = document.body;
+    const isLight = body.classList.toggle('light-mode');
+    if (isLight) {
+      // Show light mode icon and label
+      darkModeIcon.textContent = 'light_mode';
+      darkModeToggle.childNodes[1].textContent = ' light_mode';
+    } else {
+      darkModeIcon.textContent = 'dark_mode';
+      darkModeToggle.childNodes[1].textContent = ' dark_mode';
+    }
+  });
+
+  // Voice command button toggle UI
+  const voiceBtn = document.getElementById('voiceBtn');
+  let isListening = false;
+  voiceBtn.addEventListener('click', () => {
+    isListening = !isListening;
+    voiceBtn.classList.toggle('listening', isListening);
+    // No real speech API handling as per instructions
+  });
+
+  // Clock and date update
+  function updateClock() {
+    const clock = document.getElementById('clock');
+    const clockDate = document.getElementById('clockDate');
+    const tzSelect = document.getElementById('timezone-select');
+    const selectedTz = tzSelect.value || currentUser.timezone;
+    const now = new Date();
+    const optionsTime = {hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: selectedTz};
+    const optionsDate = {year: 'numeric', month: 'short', day: 'numeric', timeZone: selectedTz};
+    clock.textContent = now.toLocaleTimeString([], optionsTime);
+    clockDate.textContent = now.toLocaleDateString([], optionsDate);
+  }
+  setInterval(updateClock, 1000);
+
+  // Populate timezone select
+  function populateTimezones() {
+    const tzSelect = document.getElementById('timezone-select');
+    const timezones = Intl.supportedValuesOf ? Intl.supportedValuesOf('timeZone') : [
+      "UTC","America/New_York","Europe/London","Asia/Tokyo","Australia/Sydney"
+    ];
+    timezones.forEach(tz => {
+      const option = document.createElement('option');
+      option.value = tz;
+      option.textContent = tz.replace('_', ' ');
+      tzSelect.appendChild(option);
+    });
+    tzSelect.value = currentUser.timezone;
+  }
+  populateTimezones();
+  document.getElementById('timezone-select').addEventListener('change', updateClock);
+
+  // Mock weather data - static for now
+  function updateWeatherMock() {
+    const weatherTemp = document.getElementById('weatherTemp');
+    const weatherDesc = document.getElementById('weatherDesc');
+    weatherTemp.textContent = '25°C';
+    weatherDesc.textContent = 'Sunny';
+  }
+  updateWeatherMock();
+
+  // Chat form handling
+  const chatForm = document.getElementById('chatForm');
+  const chatInput = document.getElementById('chatInput');
+  const fileInput = document.getElementById('fileInput');
+  const uploadBtn = document.getElementById('uploadBtn');
+  const filePreviewContainer = document.getElementById('file-preview-container');
+
+  let filesToSend = [];
+
+  uploadBtn.addEventListener('click', () => {
+    fileInput.click();
+  });
+
+  fileInput.addEventListener('change', () => {
+    const newFiles = Array.from(fileInput.files);
+    newFiles.forEach(f => {
+      filesToSend.push(f);
+    });
+    renderFilePreviews();
+    fileInput.value = '';
+  });
+
+  function renderFilePreviews() {
+    filePreviewContainer.innerHTML = '';
+    filesToSend.forEach((file, index) => {
+      const previewDiv = document.createElement('div');
+      previewDiv.className = 'file-preview';
+      let previewContent = '';
+      if(file.type.startsWith('image/')) {
+        const url = URL.createObjectURL(file);
+        previewContent = `<img src="${url}" alt="Preview of uploaded image file" />`;
+      }
+      previewContent += `<span class="filename" title="${file.name}">${file.name}</span>`;
+      previewContent += `<button class="remove-file" aria-label="Remove file ${file.name}">&times;</button>`;
+      previewDiv.innerHTML = previewContent;
+      filePreviewContainer.appendChild(previewDiv);
+      previewDiv.querySelector('button.remove-file').addEventListener('click', () => {
+        filesToSend.splice(index, 1);
+        renderFilePreviews();
+      });
+    });
+  }
+
+  chatForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const text = chatInput.value.trim();
+    if (text === '' && filesToSend.length === 0) return;
+
+    const convo = conversations.find(c => c.id === activeConvoId);
+    if (!convo) return;
+
+    const timestamp = Date.now();
+
+    if (text !== '') {
+      convo.messages.push({
+        senderId: currentUser.id,
+        timestamp,
+        text,
+        type: 'text'
+      });
+    }
+    filesToSend.forEach(file => {
+      const url = URL.createObjectURL(file);
+      convo.messages.push({
+        senderId: currentUser.id,
+        timestamp,
+        text: null,
+        type: 'file',
+        fileName: file.name,
+        fileType: file.type,
+        fileUrl: url
+      });
+    });
+
+    filesToSend = [];
+    renderFilePreviews();
+
+    chatInput.value = '';
+
+    renderConversationList();
+    renderChatWindow();
+  });
+
+  renderConversationList();
+  renderChatWindow();
+  updateClock();
+
+</script>
 </body>
 </html>
